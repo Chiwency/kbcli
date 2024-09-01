@@ -2,6 +2,8 @@ module github.com/apecloud/kbcli
 
 go 1.21
 
+replace github.com/apecloud/kubeblocks v0.9.1-beta.6 => /home/wency/go/kubeblocks
+
 require (
 	cuelang.org/go v0.8.0
 	github.com/Masterminds/semver/v3 v3.2.1

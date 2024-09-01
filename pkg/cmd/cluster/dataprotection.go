@@ -123,7 +123,10 @@ var (
 	`)
 )
 
-const TrueValue = "true"
+const (
+	TrueValue  = "true"
+	RestoreKey = "RESTORE_KEY"
+)
 
 type CreateBackupOptions struct {
 	BackupSpec     appsv1alpha1.Backup `json:"backupSpec"`
@@ -568,12 +571,19 @@ func NewCreateRestoreCmd(f cmdutil.Factory, streams genericiooptions.IOStreams) 
 		CustomOutPut:    customOutPut,
 	}
 
+	var restoreKey string
 	cmd := &cobra.Command{
 		Use:     "restore",
 		Short:   "Restore a new cluster from backup.",
 		Example: createRestoreExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			o.Args = args
+			if restoreKey != "" {
+				o.RestoreSpec.Env = append(o.RestoreSpec.Env, corev1.EnvVar{
+					Name:  RestoreKey,
+					Value: restoreKey,
+				})
+			}
 			cmdutil.BehaviorOnFatal(printer.FatalWithRedColor)
 			util.CheckErr(o.Complete())
 			util.CheckErr(o.Validate())
@@ -583,6 +593,7 @@ func NewCreateRestoreCmd(f cmdutil.Factory, streams genericiooptions.IOStreams) 
 
 	cmd.Flags().StringVar(&o.RestoreSpec.BackupName, "backup", "", "Backup name")
 	cmd.Flags().StringVar(&o.RestoreSpec.RestorePointInTime, "restore-to-time", "", "point in time recovery(PITR)")
+	cmd.Flags().StringVar(&restoreKey, "restore-key", "", "specify the key to restore in kv database, support wildcard pattern matching")
 	cmd.Flags().StringVar(&o.RestoreSpec.VolumeRestorePolicy, "volume-restore-policy", "Parallel", "the volume claim restore policy, supported values: [Serial, Parallel]")
 	return cmd
 }
